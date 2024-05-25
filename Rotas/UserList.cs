@@ -18,7 +18,7 @@ namespace firstORM.Rotas
                     if (!context.Request.Headers.ContainsKey("Authorization"))// verifica se veio um token
                     {
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        await context.Response.WriteAsync("Token invalido ou não fornecido");
+                        await context.Response.WriteAsync("Adicione um token");
                     }
                     //recebe token e tira o Bearer a baixo
                     var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
