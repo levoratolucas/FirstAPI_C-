@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "T/obvfM/QRoOs4I7gPZNnr2tFn+K4OED2GaTNeL+zF+Hf0ThMPRgzs1xJrrP2uQVQRM0AFViloCR1qaW7M/zEQ==",
+  "dgSpecHash": "tVbRkGBfA5MR/tg7tweFDcsA4TMltKBUuW2mEWIwsvrTFqkTAXuPIKuKOSStFtqqXtccBQiFPFCghTDGfPL2MA==",
   "success": true,
-  "projectFilePath": "d:\\aula quinta\\second\\firstORM\\firstORM.csproj",
+  "projectFilePath": "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\levor\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\levor\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
