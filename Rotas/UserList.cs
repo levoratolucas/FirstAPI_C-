@@ -45,14 +45,15 @@ namespace firstORM.Rotas
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
                         var users = await dbContext.Users.OrderByDescending(u => u.id).ToListAsync();
-                        return Results.Json(users);
+                          await context.Response.WriteAsJsonAsync(users);
+                          ;
                     }
 
                 }catch (Exception ex)
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsync("Token invalido ");
-                return null;
+                
                 
                 }
 
