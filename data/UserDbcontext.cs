@@ -7,11 +7,26 @@ namespace firstORM.data
     public class UserDbContext : DbContext
     {
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
-        public DbSet<UserModels> Users { get; set; }
+        public DbSet<UserModel> Users { get; set; }
+        public DbSet<ProdutoModel> Produto { get; set; }
 
-        public void AddUserModel(String nome,String email, String senha )
+
+        public void AddUserModel(String nome, Double valor, String fornecedor)
         {
-            var newUser = new UserModels
+            var newUser = new ProdutoModel
+            {
+                nome = nome,
+                valor = valor,
+                fornecedor = fornecedor
+
+            };
+            Produto.Add(newUser);
+            SaveChanges();
+        }
+
+        public void AddUserModel(String nome, String email, String senha)
+        {
+            var newUser = new UserModel
             {
                 nome = nome,
                 email = email,

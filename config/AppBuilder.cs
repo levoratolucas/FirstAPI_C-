@@ -15,7 +15,12 @@ namespace firstORM
             builder.Services.AddDbContext<UserDbContext>(options =>
                 options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
                     new MySqlServerVersion(new Version(8, 0, 26)))
+                    
             );
+             builder.Services.AddDbContext<ProdutoDbContext>(options =>
+                options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),                
+                 new MySqlServerVersion(new Version(8, 0, 26))
+            ));
 
             return builder;
         }

@@ -1,7 +1,7 @@
 // Arquivo: UserModels.cs
 namespace firstORM.models
 {
-    public class UserModels
+    public class UserModel
     {
         public int id { get; set; }
         public string nome { get; set; }
