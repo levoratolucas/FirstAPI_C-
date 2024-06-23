@@ -1,4 +1,4 @@
-namespace firstORM.Rotas
+namespace firstORM.service
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -65,8 +65,12 @@ namespace firstORM.Rotas
                 var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
 
                 var produto = new ProdutoModel { nome = nome, valor = valor, fornecedor = fornecedor };
-                productService.AddProduto(produto,app);            
-
+               using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    dbContext.Produto.Add(produto);
+                    await dbContext.SaveChangesAsync();
+                }
                 await context.Response.WriteAsync("Produto adicionado: " + nome);
             });
         }
@@ -79,8 +83,12 @@ namespace firstORM.Rotas
             {
                 if (!ValidateToken(context, out _)) return;
 
-               await productService.ListProduto(context,app);
-
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var produtos = await dbContext.Produto.ToListAsync();
+                    await context.Response.WriteAsJsonAsync(produtos);
+                }
             });
         }
 
@@ -97,7 +105,12 @@ namespace firstORM.Rotas
                 var json = JsonDocument.Parse(body);
                 var nome = json.RootElement.GetProperty("nome").GetString();
 
-               await productService.SearchProduto(nome,context,app);
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var produtos = await dbContext.Produto.Where(p => EF.Functions.Like(p.nome, "%" + nome + "%")).ToListAsync();
+                    await context.Response.WriteAsJsonAsync(produtos);
+                }
             });
         }
 
@@ -117,7 +130,24 @@ namespace firstORM.Rotas
                 var valor = json.RootElement.GetProperty("valor").GetDouble();
                 var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
 
-               productService.updateProduto(id,nome,valor,fornecedor,context,app);
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var produto = await dbContext.Produto.FindAsync(id);
+                    if (produto != null)
+                    {
+                        produto.nome = nome;
+                        produto.valor = valor;
+                        produto.fornecedor = fornecedor;
+                        await dbContext.SaveChangesAsync();
+                        await context.Response.WriteAsync("Produto atualizado: " + nome);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        await context.Response.WriteAsync("Produto não encontrado");
+                    }
+                }
             });
         }
 
