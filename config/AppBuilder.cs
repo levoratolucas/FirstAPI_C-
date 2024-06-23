@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -12,18 +11,16 @@ namespace firstORM
         public static WebApplicationBuilder GenerateBuilder(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<UserDbContext>(options =>
-                options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                    new MySqlServerVersion(new Version(8, 0, 26)))
-                    
-            );
-             builder.Services.AddDbContext<ProdutoDbContext>(options =>
-                options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),                
-                 new MySqlServerVersion(new Version(8, 0, 26))
-            ));
+            var mysqlVersion = new MySqlServerVersion(new Version(8, 0, 26));
+
+            void AddMySql<TContext>(IServiceCollection services, MySqlServerVersion mysqlVersion) where TContext : DbContext
+            {
+                services.AddDbContext<TContext>(options =>
+                    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), mysqlVersion));
+            }
+            AddMySql<LevoratechDbContext>(builder.Services, mysqlVersion);
 
             return builder;
         }
     }
 }
-

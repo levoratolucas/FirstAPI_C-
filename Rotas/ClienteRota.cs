@@ -8,9 +8,8 @@ namespace firstORM.Rotas
     using firstORM.models;
     using System.Text.Json;
 
-    public class ProdutoRota
+    public class ClienteRota
     {
-        private firstORM.services.ProductService productService = new services.ProductService();
         private TokenValidationParameters GetValidationParameters()
         {
             var key = Encoding.ASCII.GetBytes("abcabcabcabcabcabcabcabcabcabcab");
@@ -61,13 +60,19 @@ namespace firstORM.Rotas
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var valor = json.RootElement.GetProperty("valor").GetDouble();
-                var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
+                var CPF = json.RootElement.GetProperty("CPF").GetString();
+                var email = json.RootElement.GetProperty("email").GetString();
 
-                var produto = new ProdutoModel { nome = nome, valor = valor, fornecedor = fornecedor };
-                productService.AddProduto(produto,app);            
+                var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
 
-                await context.Response.WriteAsync("Produto adicionado: " + nome);
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    dbContext.Cliente.Add(cliente);
+                    await dbContext.SaveChangesAsync();
+                }
+
+                await context.Response.WriteAsync("Cliente adicionado: " + nome);
             });
         }
 
@@ -79,8 +84,12 @@ namespace firstORM.Rotas
             {
                 if (!ValidateToken(context, out _)) return;
 
-               await productService.ListProduto(context,app);
-
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var clientes = await dbContext.Cliente.ToListAsync();
+                    await context.Response.WriteAsJsonAsync(clientes);
+                }
             });
         }
 
@@ -95,9 +104,14 @@ namespace firstORM.Rotas
                 using var reader = new System.IO.StreamReader(context.Request.Body);
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
-                var nome = json.RootElement.GetProperty("nome").GetString();
+                var CPF = json.RootElement.GetProperty("CPF").GetString();
 
-               await productService.SearchProduto(nome,context,app);
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var cliente = await dbContext.Cliente.Where(p => EF.Functions.Like(p.CPF, "%" + CPF + "%")).ToListAsync();
+                    await context.Response.WriteAsJsonAsync(cliente);
+                }
             });
         }
 
@@ -114,10 +128,27 @@ namespace firstORM.Rotas
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var valor = json.RootElement.GetProperty("valor").GetDouble();
-                var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
+                var CPF = json.RootElement.GetProperty("CPF").GetString();
+                var email = json.RootElement.GetProperty("email").GetString();
 
-               productService.updateProduto(id,nome,valor,fornecedor,context,app);
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                    var cliente = await dbContext.Cliente.FindAsync(id);
+                    if (cliente != null)
+                    {
+                        cliente.nome = nome;
+                        cliente.CPF = CPF;
+                        cliente.email = email;
+                        await dbContext.SaveChangesAsync();
+                        await context.Response.WriteAsync("cliente atualizado: " + nome);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        await context.Response.WriteAsync("Produto não encontrado");
+                    }
+                }
             });
         }
 
@@ -134,17 +165,17 @@ namespace firstORM.Rotas
                 using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var produto = await dbContext.Produto.FindAsync(id);
-                    if (produto != null)
+                    var cliente = await dbContext.Cliente.FindAsync(id);
+                    if (cliente != null)
                     {
-                        dbContext.Produto.Remove(produto);
+                        dbContext.Cliente.Remove(cliente);
                         await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("Produto deletado: " + produto.nome);
+                        await context.Response.WriteAsync("Cliente deletado: " + cliente.nome);
                     }
                     else
                     {
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("Produto não encontrado");
+                        await context.Response.WriteAsync("cliente não encontrado");
                     }
                 }
             });

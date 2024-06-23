@@ -5,20 +5,20 @@ using System.IO;
 
 namespace firstORM.data
 {
-    public class ProdutoDbContextFactory : IDesignTimeDbContextFactory<ProdutoDbContext>
+    public class LevoratechDbContextFactory : IDesignTimeDbContextFactory<LevoratechDbContext>
     {
-        public ProdutoDbContext CreateDbContext(string[] args)
+        public LevoratechDbContext CreateDbContext(string[] args)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var optionsBuilder = new DbContextOptionsBuilder<ProdutoDbContext>();
-            var connectionString = configuration.GetConnectionString("ProdutoConnection");
+            var optionsBuilder = new DbContextOptionsBuilder<LevoratechDbContext>();
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
-            return new ProdutoDbContext(optionsBuilder.Options);
+            return new LevoratechDbContext(optionsBuilder.Options);
         }
     }
 }

@@ -1,11 +1,13 @@
 namespace firstORM.config
 {
 
-
+    using Microsoft.EntityFrameworkCore;
     using System.IdentityModel.Tokens.Jwt;
     using System.Text;
+
     using System.Text.Json;
-    
+
+
     using Microsoft.IdentityModel.Tokens;
     public class Auth
     {
@@ -27,7 +29,7 @@ namespace firstORM.config
             return tokenHandler.WriteToken(token);
         }
 
-        public void TokenAuth(WebApplication? app,String rota)
+        public void TokenAuth(WebApplication? app, String rota)
         {
             ArgumentNullException.ThrowIfNull(app);
 
@@ -40,17 +42,24 @@ namespace firstORM.config
             var username = json.RootElement.GetProperty("username").GetString();
             var email = json.RootElement.GetProperty("email").GetString();
             var senha = json.RootElement.GetProperty("senha").GetString();
-            
-            if (senha == "123456")
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<firstORM.data.LevoratechDbContext>();
+                var user = dbContext.Users.SingleOrDefault(u => u.nome == username);
+                
+                
+
+            if (user != null && user.senha == senha && user.email == email )
             {
                 var token = GenerateToken();
                 return token;
+            }
             }
             return "senha invalida";
         });
         }
 
-        
+
 
     }
 }

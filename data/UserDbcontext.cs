@@ -1,6 +1,7 @@
 // Arquivo: UserDbContext.cs
 using Microsoft.EntityFrameworkCore;
 using firstORM.models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace firstORM.data
 {
@@ -8,21 +9,7 @@ namespace firstORM.data
     {
         public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
         public DbSet<UserModel> Users { get; set; }
-        public DbSet<ProdutoModel> Produto { get; set; }
-
-
-        public void AddUserModel(String nome, Double valor, String fornecedor)
-        {
-            var newUser = new ProdutoModel
-            {
-                nome = nome,
-                valor = valor,
-                fornecedor = fornecedor
-
-            };
-            Produto.Add(newUser);
-            SaveChanges();
-        }
+       
 
         public void AddUserModel(String nome, String email, String senha)
         {
@@ -35,5 +22,6 @@ namespace firstORM.data
             Users.Add(newUser);
             SaveChanges();
         }
+        
     }
 }
