@@ -1,23 +1,24 @@
 
-public class Program
+public class Programa
 {
     public static void Main(string[] args)
     {
         var builder = firstORM.AppBuilder.GenerateBuilder(args);
         var app = builder.Build();
+        
+        if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
         var auth = new firstORM.config.Auth();
-        var user = new firstORM.Rotas.UserRota();
-        var cliente = new firstORM.Rotas.ClienteRota();
+        var user = new firstORM.service.UserRota();
+        var cliente = new firstORM.service.ClienteRota();
         auth.TokenAuth(app, "/login");
         user.Add(app, "/useradd");
         user.List(app, "/userlist");
         user.Search(app, "/usersearch");
-        var produtoRota = new firstORM.Rotas.ProdutoRota();
-        produtoRota.Add(app, "/produto/adicionar");
-        produtoRota.List(app, "/produto/listar");
-        produtoRota.Search(app, "/produto/procurar");
-        produtoRota.Update(app, "/produto/atualizar");
-        produtoRota.Delete(app, "/produto/deletar");
+        var produtoRota = new firstORM.service.ProdutoRota();
+        produtoRota.Rotas(app);
         cliente.List(app, "/clienteList");
         cliente.Add(app, "/clienteadd");
         cliente.Delete(app, "/clientedelete");
@@ -33,6 +34,7 @@ public class Program
 
         // var produtoRota2 = new ProdutoRota2(app);
         // produtoRota2.ConfigureRoutes();
+        
 
         app.Run();
     }
