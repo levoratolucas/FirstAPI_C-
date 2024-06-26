@@ -8,62 +8,62 @@ namespace firstORM.service
     using firstORM.models;
     using System.Text.Json;
 
-   public class ProdutoService
+   public class ClienteService
     {
         
 
-        // Método para consultar todos os produtos
-        public async Task<List<firstORM.models.ProdutoModel>> GetAllProdutosAsync(LevoratechDbContext _dbContext)
+        // Método para consultar todos os clientes
+        public async Task<List<firstORM.models.ClienteModel>> GetAllclientesAsync(LevoratechDbContext _dbContext)
         {
-            return await _dbContext.Produto.ToListAsync();
+            return await _dbContext.Cliente.ToListAsync();
         }
 
-        // Método para consultar um produto a partir do seu Id
-        public async Task<firstORM.models.ProdutoModel> GetProdutoByIdAsync(LevoratechDbContext _dbContext,int id)
+        // Método para consultar um cliente a partir do seu Id
+        public async Task<firstORM.models.ClienteModel> GetclienteByIdAsync(LevoratechDbContext _dbContext,int id)
         {
-            return await _dbContext.Produto.FindAsync(id);
+            return await _dbContext.Cliente.FindAsync(id);
         }
         
-        // Método para  gravar um novo produto
-        public async Task AddProdutoAsync(LevoratechDbContext _dbContext,firstORM.models.ProdutoModel produto)
+        // Método para  gravar um novo cliente
+        public async Task AddClienteAsync(LevoratechDbContext _dbContext,firstORM.models.ClienteModel cliente)
         {
-            _dbContext.Produto.Add(produto);
+            _dbContext.Cliente.Add(cliente);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, double valor, string fornecedor, int id ){
+        public async Task update(HttpContext context, WebApplication? app, string nome, string CPF, string email, int id ){
             using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var produto = await dbContext.Produto.FindAsync(id);
-                    if (produto != null)
+                    var cliente = await dbContext.Cliente.FindAsync(id);
+                    if (cliente != null)
                     {
-                        produto.nome = nome;
-                        produto.valor = valor;
-                        produto.fornecedor = fornecedor;
+                        cliente.nome = nome;
+                        cliente.CPF = CPF;
+                        cliente.email = email;
                         await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("Produto atualizado: " + nome);
+                        await context.Response.WriteAsync("cliente atualizado: " + nome);
                     }
                     else
                     {
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("Produto não encontrado");
+                        await context.Response.WriteAsync("cliente não encontrado");
                     }
                 }
         }
-        // Método para atualizar os dados de um produto
-        public async Task UpdateProdutoAsync(LevoratechDbContext _dbContext,int id, firstORM.models.ProdutoModel produto)
+        // Método para atualizar os dados de um cliente
+        public async Task UpdateclienteAsync(LevoratechDbContext _dbContext,int id, firstORM.models.ClienteModel cliente)
         {
-            _dbContext.Entry(produto).State = EntityState.Modified;
+            _dbContext.Entry(cliente).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }
 
-        // Método para excluir um produto
-        public async Task DeleteProdutoAsync(LevoratechDbContext _dbContext,int id)
+        // Método para excluir um cliente
+        public async Task DeleteclienteAsync(LevoratechDbContext _dbContext,int id)
         {
-            var produto = await _dbContext.Produto.FindAsync(id);
-            if (produto != null)
+            var cliente = await _dbContext.Cliente.FindAsync(id);
+            if (cliente != null)
             {
-                _dbContext.Produto.Remove(produto);
+                _dbContext.Cliente.Remove(cliente);
                 await _dbContext.SaveChangesAsync();
             }
         }

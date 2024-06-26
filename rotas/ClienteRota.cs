@@ -10,6 +10,7 @@ namespace firstORM.service
 
     public class ClienteRota
     {
+        private ClienteService ClienteService;
         private TokenValidationParameters GetValidationParameters()
         {
             var key = Encoding.ASCII.GetBytes("abcabcabcabcabcabcabcabcabcabcab");
@@ -48,11 +49,11 @@ namespace firstORM.service
             }
         }
 
-        public void Add(WebApplication? app, string rota)
+        public void Rotas(WebApplication? app)
         {
             ArgumentNullException.ThrowIfNull(app);
 
-            app.MapPost(rota, async (HttpContext context) =>
+            app.MapPost("/cliente/adicionar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
@@ -64,62 +65,51 @@ namespace firstORM.service
                 var email = json.RootElement.GetProperty("email").GetString();
 
                 var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
-
                 using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    dbContext.Cliente.Add(cliente);
-                    await dbContext.SaveChangesAsync();
+                    ClienteService = new ClienteService();
+                    await ClienteService.AddClienteAsync(dbContext,cliente);                    
                 }
-
-                await context.Response.WriteAsync("Cliente adicionado: " + nome);
+                await context.Response.WriteAsync("cliente adicionado: " + nome);
             });
-        }
+        
 
-        public void List(WebApplication? app, string rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
-
-            app.MapGet(rota, async (HttpContext context) =>
+            app.MapGet("/cliente/listar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
                 using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var clientes = await dbContext.Cliente.ToListAsync();
+                    ClienteService = new ClienteService();
+                    var clientes = await ClienteService.GetAllclientesAsync(dbContext);
                     await context.Response.WriteAsJsonAsync(clientes);
+
                 }
             });
-        }
+       
 
-        public void Search(WebApplication? app, string rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
-
-            app.MapPost(rota, async (HttpContext context) =>
+            app.MapPost("/cliente/procurar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
                 using var reader = new System.IO.StreamReader(context.Request.Body);
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
-                var CPF = json.RootElement.GetProperty("CPF").GetString();
+                var id = json.RootElement.GetProperty("id").GetInt16();
 
                 using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var cliente = await dbContext.Cliente.Where(p => EF.Functions.Like(p.CPF, "%" + CPF + "%")).ToListAsync();
-                    await context.Response.WriteAsJsonAsync(cliente);
+                    ClienteService = new ClienteService();
+                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
+                    await context.Response.WriteAsJsonAsync(clientes);
                 }
             });
-        }
+       
 
-        public void Update(WebApplication? app, string rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
-
-            app.MapPost(rota, async (HttpContext context) =>
+            app.MapPost("/cliente/atualizar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
@@ -131,52 +121,27 @@ namespace firstORM.service
                 var CPF = json.RootElement.GetProperty("CPF").GetString();
                 var email = json.RootElement.GetProperty("email").GetString();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var cliente = await dbContext.Cliente.FindAsync(id);
-                    if (cliente != null)
-                    {
-                        cliente.nome = nome;
-                        cliente.CPF = CPF;
-                        cliente.email = email;
-                        await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("cliente atualizado: " + nome);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("Produto não encontrado");
-                    }
-                }
+                await ClienteService.update(context,app,nome,CPF,email,id);
             });
-        }
+        
 
-        public void Delete(WebApplication? app, string rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
-
-            app.MapDelete(rota, async (HttpContext context) =>
+            app.MapPost("/cliente/deletar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
-
-                var id = int.Parse(context.Request.Query["id"]);
+                using var reader = new System.IO.StreamReader(context.Request.Body);
+                var body = await reader.ReadToEndAsync();
+                var json = JsonDocument.Parse(body);
+                var id = json.RootElement.GetProperty("id").GetInt32();
 
                 using (var scope = app.Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var cliente = await dbContext.Cliente.FindAsync(id);
-                    if (cliente != null)
-                    {
-                        dbContext.Cliente.Remove(cliente);
-                        await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("Cliente deletado: " + cliente.nome);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("cliente não encontrado");
-                    }
+                    ClienteService = new ClienteService();
+                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
+                    await ClienteService.DeleteclienteAsync(dbContext,id);
+
+                    await context.Response.WriteAsync("executado");
+                    
                 }
             });
         }
