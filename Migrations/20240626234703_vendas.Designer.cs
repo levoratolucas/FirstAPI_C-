@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using firstORM.data;
 
@@ -11,9 +12,11 @@ using firstORM.data;
 namespace firstORM.Migrations
 {
     [DbContext(typeof(LevoratechDbContext))]
-    partial class LevoratechDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240626234703_vendas")]
+    partial class vendas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

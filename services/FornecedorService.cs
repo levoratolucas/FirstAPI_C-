@@ -1,4 +1,4 @@
-namespace firstORM.service
+namespace firstORM.rota
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -8,62 +8,64 @@ namespace firstORM.service
     using firstORM.models;
     using System.Text.Json;
 
-   public class ClienteService
+   public class FornecedorService
     {
         
-
-        // Método para consultar todos os clientes
-        public async Task<List<firstORM.models.ClienteModel>> GetAllclientesAsync(LevoratechDbContext _dbContext)
+        private LevoratechDbContext _dbContext;
+        public FornecedorService(LevoratechDbContext db){
+            _dbContext = db;
+        }
+        // Método para consultar todos os fornecedors
+        public async Task<List<firstORM.models.FornecedorModel>> GetAllfornecedorsAsync()
         {
-            return await _dbContext.Cliente.ToListAsync();
+            return await _dbContext.Fornecedor.ToListAsync();
         }
 
-        // Método para consultar um cliente a partir do seu Id
-        public async Task<firstORM.models.ClienteModel> GetclienteByIdAsync(LevoratechDbContext _dbContext,int id)
+        // Método para consultar um fornecedor a partir do seu Id
+        public async Task<firstORM.models.FornecedorModel> GetfornecedorByIdAsync(int id)
         {
-            return await _dbContext.Cliente.FindAsync(id);
+            return await _dbContext.Fornecedor.FindAsync(id);
         }
         
-        // Método para  gravar um novo cliente
-        public async Task AddClienteAsync(LevoratechDbContext _dbContext,firstORM.models.ClienteModel cliente)
+        // Método para  gravar um novo fornecedor
+        public async Task AddfornecedorAsync(firstORM.models.FornecedorModel fornecedor)
         {
-            _dbContext.Cliente.Add(cliente);
+            _dbContext.Fornecedor.Add(fornecedor);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, string CPF, string email, int id ){
-            using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var cliente = await dbContext.Cliente.FindAsync(id);
-                    if (cliente != null)
+        public async Task update(HttpContext context, WebApplication? app, string nome, string cnpj, string email,string telefone ,int id ){
+            
+                    var fornecedor = await _dbContext.Fornecedor.FindAsync(id);
+                    if (fornecedor != null)
                     {
-                        cliente.nome = nome;
-                        cliente.CPF = CPF;
-                        cliente.email = email;
-                        await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("cliente atualizado: " + nome);
+                        fornecedor.nome = nome;
+                        fornecedor.cnpj = cnpj;
+                        fornecedor.email = email;
+                        fornecedor.telefone = telefone;
+                        await _dbContext.SaveChangesAsync();
+                        await context.Response.WriteAsync("fornecedor atualizado: " + nome);
                     }
                     else
                     {
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("cliente não encontrado");
+                        await context.Response.WriteAsync("fornecedor não encontrado");
                     }
-                }
+                
         }
-        // Método para atualizar os dados de um cliente
-        public async Task UpdateclienteAsync(LevoratechDbContext _dbContext,int id, firstORM.models.ClienteModel cliente)
+        // Método para atualizar os dados de um fornecedor
+        public async Task UpdatefornecedorAsync(int id, firstORM.models.FornecedorModel fornecedor)
         {
-            _dbContext.Entry(cliente).State = EntityState.Modified;
+            _dbContext.Entry(fornecedor).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }
 
-        // Método para excluir um cliente
-        public async Task DeleteclienteAsync(LevoratechDbContext _dbContext,int id)
+        // Método para excluir um fornecedor
+        public async Task DeletefornecedorAsync(int id)
         {
-            var cliente = await _dbContext.Cliente.FindAsync(id);
-            if (cliente != null)
+            var fornecedor = await _dbContext.Fornecedor.FindAsync(id);
+            if (fornecedor != null)
             {
-                _dbContext.Cliente.Remove(cliente);
+                _dbContext.Fornecedor.Remove(fornecedor);
                 await _dbContext.SaveChangesAsync();
             }
         }

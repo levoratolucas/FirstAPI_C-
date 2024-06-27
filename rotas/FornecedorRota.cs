@@ -1,4 +1,4 @@
-namespace firstORM.service
+namespace firstORM.rota
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -8,9 +8,13 @@ namespace firstORM.service
     using firstORM.models;
     using System.Text.Json;
 
-    public class ClienteRota
+    public class FornecedorRota
     {
-        private ClienteService ClienteService;
+        private FornecedorService FornecedorService;
+
+        public FornecedorRota(LevoratechDbContext dbContext){
+            FornecedorService = new FornecedorService(dbContext);
+        }
         private TokenValidationParameters GetValidationParameters()
         {
             var key = Encoding.ASCII.GetBytes("abcabcabcabcabcabcabcabcabcabcab");
@@ -53,7 +57,7 @@ namespace firstORM.service
         {
             ArgumentNullException.ThrowIfNull(app);
 
-            app.MapPost("/cliente/adicionar", async (HttpContext context) =>
+            app.MapPost("/fornecedor/adicionar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
@@ -61,36 +65,31 @@ namespace firstORM.service
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var CPF = json.RootElement.GetProperty("CPF").GetString();
+                var cnpj = json.RootElement.GetProperty("cnpj").GetString();
+                var telefone = json.RootElement.GetProperty("telefone").GetString();
                 var email = json.RootElement.GetProperty("email").GetString();
 
-                var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    await ClienteService.AddClienteAsync(dbContext,cliente);                    
-                }
-                await context.Response.WriteAsync("cliente adicionado: " + nome);
+                var fornecedor = new FornecedorModel { nome = nome, cnpj = cnpj, email = email , telefone = telefone};
+                
+                    await FornecedorService.AddfornecedorAsync(fornecedor);                    
+                
+                await context.Response.WriteAsync("fornecedor adicionado: " + nome);
             });
         
 
-            app.MapGet("/cliente/listar", async (HttpContext context) =>
+            app.MapGet("/fornecedor/listar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetAllclientesAsync(dbContext);
-                    await context.Response.WriteAsJsonAsync(clientes);
+                
+                    var fornecedors = await FornecedorService.GetAllfornecedorsAsync();
+                    await context.Response.WriteAsJsonAsync(fornecedors);
 
-                }
+                
             });
        
 
-            app.MapPost("/cliente/procurar", async (HttpContext context) =>
+            app.MapPost("/fornecedor/procurar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
@@ -99,17 +98,13 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt16();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
-                    await context.Response.WriteAsJsonAsync(clientes);
-                }
+                    var fornecedors = await FornecedorService.GetfornecedorByIdAsync(id);
+                    await context.Response.WriteAsJsonAsync(fornecedors);
+                
             });
        
 
-            app.MapPost("/cliente/atualizar", async (HttpContext context) =>
+            app.MapPost("/fornecedor/atualizar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
@@ -118,14 +113,15 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var CPF = json.RootElement.GetProperty("CPF").GetString();
+                var cnpj = json.RootElement.GetProperty("cnpj").GetString();
+                var telefone = json.RootElement.GetProperty("telefone").GetString();
                 var email = json.RootElement.GetProperty("email").GetString();
 
-                await ClienteService.update(context,app,nome,CPF,email,id);
+                await FornecedorService.update(context,app,nome,cnpj,email,telefone,id);
             });
         
 
-            app.MapPost("/cliente/deletar", async (HttpContext context) =>
+            app.MapPost("/fornecedor/deletar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
                 using var reader = new System.IO.StreamReader(context.Request.Body);
@@ -133,16 +129,13 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
-                    await ClienteService.DeleteclienteAsync(dbContext,id);
+                
+                    var fornecedors = await FornecedorService.GetfornecedorByIdAsync(id);
+                    await FornecedorService.DeletefornecedorAsync(id);
 
                     await context.Response.WriteAsync("executado");
                     
-                }
+                
             });
         }
     }

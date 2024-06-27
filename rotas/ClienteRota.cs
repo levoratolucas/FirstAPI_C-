@@ -1,4 +1,4 @@
-namespace firstORM.service
+namespace firstORM.rota
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -11,6 +11,11 @@ namespace firstORM.service
     public class ClienteRota
     {
         private ClienteService ClienteService;
+
+        public ClienteRota(LevoratechDbContext dbContext)
+        {
+            ClienteService = new ClienteService(dbContext);
+        }
         private TokenValidationParameters GetValidationParameters()
         {
             var key = Encoding.ASCII.GetBytes("abcabcabcabcabcabcabcabcabcabcab");
@@ -65,30 +70,24 @@ namespace firstORM.service
                 var email = json.RootElement.GetProperty("email").GetString();
 
                 var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    await ClienteService.AddClienteAsync(dbContext,cliente);                    
-                }
+
+                await ClienteService.AddClienteAsync(cliente);
+
                 await context.Response.WriteAsync("cliente adicionado: " + nome);
             });
-        
+
 
             app.MapGet("/cliente/listar", async (HttpContext context) =>
             {
                 if (!ValidateToken(context, out _)) return;
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetAllclientesAsync(dbContext);
-                    await context.Response.WriteAsJsonAsync(clientes);
 
-                }
+                var clientes = await ClienteService.GetAllclientesAsync();
+                await context.Response.WriteAsJsonAsync(clientes);
+
+
             });
-       
+
 
             app.MapPost("/cliente/procurar", async (HttpContext context) =>
             {
@@ -99,15 +98,11 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt16();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
-                    await context.Response.WriteAsJsonAsync(clientes);
-                }
+                var clientes = await ClienteService.GetclienteByIdAsync(id);
+                await context.Response.WriteAsJsonAsync(clientes);
+
             });
-       
+
 
             app.MapPost("/cliente/atualizar", async (HttpContext context) =>
             {
@@ -121,9 +116,9 @@ namespace firstORM.service
                 var CPF = json.RootElement.GetProperty("CPF").GetString();
                 var email = json.RootElement.GetProperty("email").GetString();
 
-                await ClienteService.update(context,app,nome,CPF,email,id);
+                await ClienteService.update(context, app, nome, CPF, email, id);
             });
-        
+
 
             app.MapPost("/cliente/deletar", async (HttpContext context) =>
             {
@@ -133,16 +128,13 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    ClienteService = new ClienteService();
-                    var clientes = await ClienteService.GetclienteByIdAsync(dbContext,id);
-                    await ClienteService.DeleteclienteAsync(dbContext,id);
+                
+                    var clientes = await ClienteService.GetclienteByIdAsync(id);
+                    await ClienteService.DeleteclienteAsync(id);
 
                     await context.Response.WriteAsync("executado");
-                    
-                }
+
+                
             });
         }
     }

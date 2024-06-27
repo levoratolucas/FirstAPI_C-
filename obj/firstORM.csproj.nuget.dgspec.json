@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj": {}
+    "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj": {}
   },
   "projects": {
-    "D:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj": {
+    "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj",
+        "projectUniqueName": "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj",
         "projectName": "firstORM",
-        "projectPath": "D:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj",
+        "projectPath": "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\firstORM.csproj",
         "packagesPath": "C:\\Users\\levor\\.nuget\\packages\\",
-        "outputPath": "D:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\obj\\",
+        "outputPath": "d:\\aula quinta\\second\\FirstAPI_C-\\firstORM\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\levor\\AppData\\Roaming\\NuGet\\NuGet.Config"

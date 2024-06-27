@@ -1,4 +1,4 @@
-namespace firstORM.service
+namespace firstORM.rota
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -14,6 +14,9 @@ namespace firstORM.service
 
         
         private ProdutoService produtoService;
+        public ProdutoRota(LevoratechDbContext db){
+            produtoService = new ProdutoService(db);
+        }
         private TokenValidationParameters GetValidationParameters()
         {
             var key = Encoding.ASCII.GetBytes("abcabcabcabcabcabcabcabcabcabcab");
@@ -66,16 +69,13 @@ namespace firstORM.service
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var valor = json.RootElement.GetProperty("valor").GetDouble();
+                var valor = json.RootElement.GetProperty("valor").GetDecimal();
                 var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
 
                 var produto = new ProdutoModel { nome = nome, valor = valor, fornecedor = fornecedor };
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    produtoService = new ProdutoService();
-                    await produtoService.AddProdutoAsync(dbContext,produto);                    
-                }
+                
+                    await produtoService.AddProdutoAsync(produto);                    
+                
                 await context.Response.WriteAsync("Produto adicionado: " + nome);
             });
         
@@ -84,14 +84,11 @@ namespace firstORM.service
             {
                 if (!ValidateToken(context, out _)) return;
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    produtoService = new ProdutoService();
-                    var produtos = await produtoService.GetAllProdutosAsync(dbContext);
+                
+                    var produtos = await produtoService.GetAllProdutosAsync();
                     await context.Response.WriteAsJsonAsync(produtos);
 
-                }
+                
             });
        
 
@@ -104,13 +101,10 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt16();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    produtoService = new ProdutoService();
-                    var produtos = await produtoService.GetProdutoByIdAsync(dbContext,id);
+                
+                    var produtos = await produtoService.GetProdutoByIdAsync(id);
                     await context.Response.WriteAsJsonAsync(produtos);
-                }
+                
             });
        
 
@@ -123,7 +117,7 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
                 var nome = json.RootElement.GetProperty("nome").GetString();
-                var valor = json.RootElement.GetProperty("valor").GetDouble();
+                var valor = json.RootElement.GetProperty("valor").GetDecimal();
                 var fornecedor = json.RootElement.GetProperty("fornecedor").GetString();
 
                 await produtoService.update(context,app,nome,valor,fornecedor,id);
@@ -138,16 +132,13 @@ namespace firstORM.service
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
 
-                using (var scope = app.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    produtoService = new ProdutoService();
-                    var produtos = await produtoService.GetProdutoByIdAsync(dbContext,id);
-                    await produtoService.DeleteProdutoAsync(dbContext,id);
+                
+                    var produtos = await produtoService.GetProdutoByIdAsync(id);
+                    await produtoService.DeleteProdutoAsync(id);
 
                     await context.Response.WriteAsync("executado");
                     
-                }
+                
             });
         }
     }

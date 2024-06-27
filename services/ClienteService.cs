@@ -1,4 +1,4 @@
-namespace firstORM.service
+namespace firstORM.rota
 {
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
@@ -12,20 +12,24 @@ namespace firstORM.service
     {
         
 
-        // Método para consultar todos os clientes
-        public async Task<List<firstORM.models.ClienteModel>> GetAllclientesAsync(LevoratechDbContext _dbContext)
+        private LevoratechDbContext _dbContext;
+
+        public ClienteService(LevoratechDbContext dbContext){
+            _dbContext = dbContext;
+        }
+        public async Task<List<firstORM.models.ClienteModel>> GetAllclientesAsync()
         {
             return await _dbContext.Cliente.ToListAsync();
         }
 
         // Método para consultar um cliente a partir do seu Id
-        public async Task<firstORM.models.ClienteModel> GetclienteByIdAsync(LevoratechDbContext _dbContext,int id)
+        public async Task<firstORM.models.ClienteModel> GetclienteByIdAsync(int id)
         {
             return await _dbContext.Cliente.FindAsync(id);
         }
         
         // Método para  gravar um novo cliente
-        public async Task AddClienteAsync(LevoratechDbContext _dbContext,firstORM.models.ClienteModel cliente)
+        public async Task AddClienteAsync(firstORM.models.ClienteModel cliente)
         {
             _dbContext.Cliente.Add(cliente);
             await _dbContext.SaveChangesAsync();
@@ -51,14 +55,14 @@ namespace firstORM.service
                 }
         }
         // Método para atualizar os dados de um cliente
-        public async Task UpdateclienteAsync(LevoratechDbContext _dbContext,int id, firstORM.models.ClienteModel cliente)
+        public async Task UpdateclienteAsync(int id, firstORM.models.ClienteModel cliente)
         {
             _dbContext.Entry(cliente).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }
 
         // Método para excluir um cliente
-        public async Task DeleteclienteAsync(LevoratechDbContext _dbContext,int id)
+        public async Task DeleteclienteAsync(int id)
         {
             var cliente = await _dbContext.Cliente.FindAsync(id);
             if (cliente != null)
