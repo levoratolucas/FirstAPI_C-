@@ -8,11 +8,12 @@ namespace firstORM.rota
     using firstORM.models;
     using System.Text.Json;
 
-   public class FornecedorService
+    public class FornecedorService
     {
-        
+
         private LevoratechDbContext _dbContext;
-        public FornecedorService(LevoratechDbContext db){
+        public FornecedorService(LevoratechDbContext db)
+        {
             _dbContext = db;
         }
         // Método para consultar todos os fornecedors
@@ -26,31 +27,34 @@ namespace firstORM.rota
         {
             return await _dbContext.Fornecedor.FindAsync(id);
         }
-        
+
         // Método para  gravar um novo fornecedor
         public async Task AddfornecedorAsync(firstORM.models.FornecedorModel fornecedor)
         {
             _dbContext.Fornecedor.Add(fornecedor);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, string cnpj, string email,string telefone ,int id ){
-            
-                    var fornecedor = await _dbContext.Fornecedor.FindAsync(id);
-                    if (fornecedor != null)
-                    {
-                        fornecedor.nome = nome;
-                        fornecedor.cnpj = cnpj;
-                        fornecedor.email = email;
-                        fornecedor.telefone = telefone;
-                        await _dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("fornecedor atualizado: " + nome);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("fornecedor não encontrado");
-                    }
-                
+        public async Task update(HttpContext context, WebApplication? app, string nome, string cnpj, string email, string telefone, int id)
+        {
+            var fornecedor = await _dbContext.Fornecedor.FindAsync(id);
+            if (fornecedor != null)
+            {
+                fornecedor.nome = nome ?? fornecedor.nome;
+                fornecedor.cnpj = cnpj ?? fornecedor.cnpj;
+                fornecedor.email = email ?? fornecedor.email;
+                fornecedor.telefone = telefone ?? fornecedor.telefone;
+
+                await _dbContext.SaveChangesAsync();
+
+                var fornecedorJson = JsonSerializer.Serialize(fornecedor);
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(fornecedorJson);
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("fornecedor não encontrado");
+            }
         }
         // Método para atualizar os dados de um fornecedor
         public async Task UpdatefornecedorAsync(int id, firstORM.models.FornecedorModel fornecedor)

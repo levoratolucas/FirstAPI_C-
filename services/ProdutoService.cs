@@ -8,11 +8,12 @@ namespace firstORM.rota
     using firstORM.models;
     using System.Text.Json;
 
-   public class ProdutoService
+    public class ProdutoService
     {
-        
+
         LevoratechDbContext _dbContext;
-        public ProdutoService(LevoratechDbContext db){
+        public ProdutoService(LevoratechDbContext db)
+        {
             _dbContext = db;
         }
         // Método para consultar todos os produtos
@@ -26,30 +27,33 @@ namespace firstORM.rota
         {
             return await _dbContext.Produto.FindAsync(id);
         }
-        
+
         // Método para  gravar um novo produto
         public async Task AddProdutoAsync(firstORM.models.ProdutoModel produto)
         {
             _dbContext.Produto.Add(produto);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, decimal valor, string fornecedor, int id ){
-            
-                    var produto = await _dbContext.Produto.FindAsync(id);
-                    if (produto != null)
-                    {
-                        produto.nome = nome;
-                        produto.valor = valor;
-                        produto.fornecedor = fornecedor;
-                        await _dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("Produto atualizado: " + nome);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("Produto não encontrado");
-                    }
-                
+        public async Task update(HttpContext context, WebApplication? app, string nome, decimal valor, string fornecedor, int id)
+        {
+            var produto = await _dbContext.Produto.FindAsync(id);
+            if (produto != null)
+            {
+                produto.nome = nome ?? produto.nome;
+                produto.valor = valor != default ? valor : produto.valor;
+                produto.fornecedor = fornecedor ?? produto.fornecedor;
+
+                await _dbContext.SaveChangesAsync();
+
+                var produtoJson = JsonSerializer.Serialize(produto);
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(produtoJson);
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Produto não encontrado");
+            }
         }
         // Método para atualizar os dados de um produto
         public async Task UpdateProdutoAsync(int id, firstORM.models.ProdutoModel produto)

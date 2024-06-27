@@ -8,13 +8,14 @@ namespace firstORM.rota
     using firstORM.models;
     using System.Text.Json;
 
-   public class ClienteService
+    public class ClienteService
     {
-        
+
 
         private LevoratechDbContext _dbContext;
 
-        public ClienteService(LevoratechDbContext dbContext){
+        public ClienteService(LevoratechDbContext dbContext)
+        {
             _dbContext = dbContext;
         }
         public async Task<List<firstORM.models.ClienteModel>> GetAllclientesAsync()
@@ -27,32 +28,37 @@ namespace firstORM.rota
         {
             return await _dbContext.Cliente.FindAsync(id);
         }
-        
+
         // Método para  gravar um novo cliente
         public async Task AddClienteAsync(firstORM.models.ClienteModel cliente)
         {
             _dbContext.Cliente.Add(cliente);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, string CPF, string email, int id ){
+        public async Task update(HttpContext context, WebApplication? app, string nome, string CPF, string email, int id)
+        {
             using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                var cliente = await dbContext.Cliente.FindAsync(id);
+                
+                if (cliente != null)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
-                    var cliente = await dbContext.Cliente.FindAsync(id);
-                    if (cliente != null)
-                    {
-                        cliente.nome = nome;
-                        cliente.CPF = CPF;
-                        cliente.email = email;
-                        await dbContext.SaveChangesAsync();
-                        await context.Response.WriteAsync("cliente atualizado: " + nome);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        await context.Response.WriteAsync("cliente não encontrado");
-                    }
+                    
+                    cliente.nome = !string.IsNullOrEmpty(nome) ? nome : cliente.nome;
+                    cliente.CPF = !string.IsNullOrEmpty(CPF) ? CPF : cliente.CPF;
+                    cliente.email = !string.IsNullOrEmpty(email) ? email : cliente.email;
+                    await dbContext.SaveChangesAsync();
+                    var clienteJson = JsonSerializer.Serialize(cliente);
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(clienteJson);
                 }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsync("cliente não encontrado");
+                }
+            }
         }
         // Método para atualizar os dados de um cliente
         public async Task UpdateclienteAsync(int id, firstORM.models.ClienteModel cliente)

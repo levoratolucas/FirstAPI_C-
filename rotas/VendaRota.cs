@@ -1,12 +1,8 @@
 using firstORM.services;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using firstORM.data;
 using firstORM.models;
 using firstORM.config;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions; // Adicione essa linha se necessário
+
 
 namespace firstORM.rota
 {

@@ -16,7 +16,7 @@ namespace firstORM.rota
         {
             ClienteService = new ClienteService(dbContext);
         }
-        
+
 
         public void Rotas(WebApplication? app)
         {
@@ -33,13 +33,26 @@ namespace firstORM.rota
                 var nome = json.RootElement.GetProperty("nome").GetString();
                 var CPF = json.RootElement.GetProperty("CPF").GetString();
                 var email = json.RootElement.GetProperty("email").GetString();
+                if (!string.IsNullOrEmpty(nome) && !string.IsNullOrEmpty(CPF) && !string.IsNullOrEmpty(email))
+                {
+                    var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
 
-                var cliente = new ClienteModel { nome = nome, CPF = CPF, email = email };
+                    await ClienteService.AddClienteAsync(cliente);
 
-                await ClienteService.AddClienteAsync(cliente);
-
-                await context.Response.WriteAsync("cliente adicionado: " + nome);
+                    var clienteJson = JsonSerializer.Serialize(cliente);
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(clienteJson);
+                }
+                else
+                {
+                    var dadosJson = json.RootElement.ToString();
+                    await context.Response.WriteAsync(dadosJson);
+                }
             });
+
+
+
+
 
 
             app.MapGet("/cliente/listar", async (HttpContext context) =>
@@ -77,9 +90,10 @@ namespace firstORM.rota
                 var body = await reader.ReadToEndAsync();
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
-                var nome = json.RootElement.GetProperty("nome").GetString();
-                var CPF = json.RootElement.GetProperty("CPF").GetString();
-                var email = json.RootElement.GetProperty("email").GetString();
+
+                var nome = json.RootElement.TryGetProperty("nome", out var nomeProperty) ? nomeProperty.GetString() : string.Empty;
+                var CPF = json.RootElement.TryGetProperty("CPF", out var cpfProperty) ? cpfProperty.GetString() : string.Empty;
+                var email = json.RootElement.TryGetProperty("email", out var emailProperty) ? emailProperty.GetString() : string.Empty;
 
                 await ClienteService.update(context, app, nome, CPF, email, id);
             });
@@ -93,13 +107,13 @@ namespace firstORM.rota
                 var json = JsonDocument.Parse(body);
                 var id = json.RootElement.GetProperty("id").GetInt32();
 
-                
-                    var clientes = await ClienteService.GetclienteByIdAsync(id);
-                    await ClienteService.DeleteclienteAsync(id);
 
-                    await context.Response.WriteAsync("executado");
+                var clientes = await ClienteService.GetclienteByIdAsync(id);
+                await ClienteService.DeleteclienteAsync(id);
 
-                
+                await context.Response.WriteAsync("executado");
+
+
             });
         }
     }
