@@ -29,11 +29,11 @@ namespace firstORM.config
             return tokenHandler.WriteToken(token);
         }
 
-        public void TokenAuth(WebApplication? app, String rota)
+        public void TokenAuth(WebApplication? app)
         {
             ArgumentNullException.ThrowIfNull(app);
 
-            app.MapPost(rota, async (HttpContext contex) =>
+            app.MapPost("/login", async (HttpContext contex) =>
         {
             using var reader = new StreamReader(contex.Request.Body);
             var body = await reader.ReadToEndAsync();

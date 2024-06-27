@@ -9,11 +9,11 @@ namespace firstORM.rota
     public class UserRota
     {
 
-        public void Add(WebApplication? app, String rota)
+        public void Rotas(WebApplication? app)
         {
             ArgumentNullException.ThrowIfNull(app);
 
-            app.MapPost(rota, async (HttpContext context) =>
+            app.MapPost("/user/add", async (HttpContext context) =>
                 {
                     if (!context.Request.Headers.ContainsKey("Authorization"))// verifica se veio um token
                     {
@@ -72,12 +72,9 @@ namespace firstORM.rota
                     }
 
                 });
-        }
-        public void List(WebApplication? app, String rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
+        
 
-            app.MapGet(rota, async (HttpContext context) =>
+            app.MapGet("/user/list", async (HttpContext context) =>
                 {
                     if (!context.Request.Headers.ContainsKey("Authorization"))// verifica se veio um token
                     {
@@ -124,12 +121,10 @@ namespace firstORM.rota
 
 
                 });
-        }
-        public void Search(WebApplication? app, String rota)
-        {
-            ArgumentNullException.ThrowIfNull(app);
+        
+        
 
-            app.MapPost(rota, async (HttpContext context) =>
+            app.MapPost("/user/search", async (HttpContext context) =>
                 {
 
                     if (!context.Request.Headers.ContainsKey("Authorization"))// verifica se veio um token
