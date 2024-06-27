@@ -34,26 +34,31 @@ namespace firstORM.rota
             _dbContext.Fornecedor.Add(fornecedor);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task update(HttpContext context, WebApplication? app, string nome, string cnpj, string email, string telefone, int id)
+        public async Task Update(HttpContext context, WebApplication? app, string nome, string cnpj, string email, string telefone, int id)
         {
-            var fornecedor = await _dbContext.Fornecedor.FindAsync(id);
-            if (fornecedor != null)
+            using (var scope = app.Services.CreateScope())
             {
-                fornecedor.nome = nome ?? fornecedor.nome;
-                fornecedor.cnpj = cnpj ?? fornecedor.cnpj;
-                fornecedor.email = email ?? fornecedor.email;
-                fornecedor.telefone = telefone ?? fornecedor.telefone;
+                var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
+                var fornecedor = await dbContext.Fornecedor.FindAsync(id);
 
-                await _dbContext.SaveChangesAsync();
+                if (fornecedor != null)
+                {
+                    fornecedor.nome = !string.IsNullOrEmpty(nome) ? nome : fornecedor.nome;
+                    fornecedor.cnpj = !string.IsNullOrEmpty(cnpj) ? cnpj : fornecedor.cnpj;
+                    fornecedor.email = !string.IsNullOrEmpty(email) ? email : fornecedor.email;
+                    fornecedor.telefone = !string.IsNullOrEmpty(telefone) ? telefone : fornecedor.telefone;
 
-                var fornecedorJson = JsonSerializer.Serialize(fornecedor);
-                context.Response.ContentType = "application/json";
-                await context.Response.WriteAsync(fornecedorJson);
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("fornecedor não encontrado");
+                    await dbContext.SaveChangesAsync();
+
+                    var fornecedorJson = JsonSerializer.Serialize(fornecedor);
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(fornecedorJson);
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsync("fornecedor não encontrado");
+                }
             }
         }
         // Método para atualizar os dados de um fornecedor
