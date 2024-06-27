@@ -1,7 +1,6 @@
     using System.IdentityModel.Tokens.Jwt;
     using Microsoft.IdentityModel.Tokens;
     using System.Text;
-    using Microsoft.EntityFrameworkCore;
 
 namespace firstORM.config
 {

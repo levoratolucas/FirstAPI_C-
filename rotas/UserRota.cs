@@ -50,13 +50,13 @@ namespace firstORM.rota
 
                         // using System.Text.Json;
                         var json = JsonDocument.Parse(body);
-                        var nome = json.RootElement.GetProperty("nome").ToString();
+                        var nome = json.RootElement.GetProperty("username").ToString();
                         var email = json.RootElement.GetProperty("email").ToString();
                         var senha = json.RootElement.GetProperty("senha").ToString();
                         using (var scope = app.Services.CreateScope())
                         {
                             // using firstORM.data;
-                            var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
                             dbContext.AddUserModel(nome, email, senha);
                         }
 
@@ -104,7 +104,7 @@ namespace firstORM.rota
                         tokenHandler.ValidateToken(token, validationParameters, out validateToken);
                         using (var scope = app.Services.CreateScope())
                         {
-                            var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
                             var users = await dbContext.Users.OrderByDescending(u => u.id).ToListAsync();
                             await context.Response.WriteAsJsonAsync(users);
                             ;
@@ -159,7 +159,7 @@ namespace firstORM.rota
                         var nome = json.RootElement.GetProperty("nome").ToString();
                         using (var scope = app.Services.CreateScope())
                         {
-                            var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<LevoratechDbContext>();
                             var users = await dbContext.Users.Where(u => EF.Functions.Like(u.nome, "%" + nome + "%")).ToListAsync();
                             await context.Response.WriteAsJsonAsync(users);
 

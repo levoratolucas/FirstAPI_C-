@@ -1,7 +1,5 @@
 namespace firstORM.config
 {
-
-    using Microsoft.EntityFrameworkCore;
     using System.IdentityModel.Tokens.Jwt;
     using System.Text;
 
